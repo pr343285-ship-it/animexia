@@ -1,69 +1,114 @@
-import Image from "next/image";
+import { ContentCard, MovieCard, NewsCard, SectionHeader } from "@/components/cards";
+import Link from "next/link";
+import {
+  featuredMovie,
+  latestUpdates,
+  latestNews,
+  popularShows,
+  trendingMovies,
+  upcomingMovies,
+} from "@/lib/mock-data";
+
+function PlayIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 fill-current">
+      <path d="M8 5.14v13.72a1 1 0 0 0 1.52.85l10.13-6.86a1 1 0 0 0 0-1.7L9.52 4.29A1 1 0 0 0 8 5.14Z" />
+    </svg>
+  );
+}
+
+function ArrowIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2">
+      <path d="M5 12h13M13 6l6 6-6 6" />
+    </svg>
+  );
+}
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main>
+      <section className="hero">
+        <div className="hero__backdrop" />
+        <div className="hero__glow" />
+        <div className="site-shell relative z-10">
+          <header className="site-header">
+            <Link href="/" className="brand" aria-label="Frame homepage">
+              <span className="brand__mark">F</span>
+              <span>FRAME<span className="brand__dot">.</span></span>
+            </Link>
+            <nav className="hidden items-center gap-8 md:flex" aria-label="Primary navigation">
+              <a className="nav-link nav-link--active" href="#discover">Discover</a>
+              <a className="nav-link" href="#trending">Trending</a>
+              <a className="nav-link" href="#updates">Updates</a>
+              <a className="nav-link" href="#news">News</a>
+              <a className="nav-link" href="#shows">Shows</a>
+            </nav>
+            <div className="flex items-center gap-3">
+              <a href="#search" className="icon-button" aria-label="Search movies">
+                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-current stroke-2"><circle cx="10.8" cy="10.8" r="6.8" /><path d="m16 16 5 5" /></svg>
+              </a>
+              <a href="#newsletter" className="header-cta">Join Frame</a>
+              <details className="relative md:hidden">
+                <summary className="icon-button list-none" aria-label="Open navigation menu">
+                  <span className="sr-only">Menu</span>
+                  <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-current stroke-2"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+                </summary>
+                <nav className="mobile-nav" aria-label="Mobile navigation">
+                  <a href="#discover">Discover</a><a href="#trending">Trending</a><a href="#updates">Updates</a><a href="#news">News</a><a href="#shows">Shows</a>
+                </nav>
+              </details>
+            </div>
+          </header>
+
+          <div className="hero__content" id="discover">
+            <div className="hero__eyebrow"><span className="eyebrow-line" /> {featuredMovie.badge} <span className="eyebrow-year">{featuredMovie.releaseDate}</span></div>
+            <h1>{featuredMovie.title}<br /><em>staying with you.</em></h1>
+            <p className="hero__description">{featuredMovie.genre} · {featuredMovie.rating}. A considered guide to the films, series and people shaping what comes next.</p>
+            <div className="flex flex-wrap items-center gap-3">
+              <a className="button button--light" href="#trending"><PlayIcon /> Explore the picks</a>
+              <a className="button button--ghost" href="#updates">Read the latest <ArrowIcon /></a>
+            </div>
+          </div>
+          <div className="hero__meta"><span>01 / 04</span><span className="hero__progress"><i /></span><span>Watchlist spotlight</span></div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </section>
+
+      <div className="site-shell">
+        <section className="section" id="trending">
+          <SectionHeader eyebrow="The conversation" title="Trending now" action="View all" />
+          <div className="movie-grid">{trendingMovies.map((movie, index) => <MovieCard key={movie.title} movie={movie} index={index} />)}</div>
+        </section>
+
+        <section className="section section--updates" id="updates">
+          <SectionHeader eyebrow="From the frame" title="Latest updates" action="All stories" />
+          <div className="updates-grid">{latestUpdates.map((item) => <ContentCard key={item.title} item={item} />)}</div>
+        </section>
+
+        <section className="section section--news" id="news">
+          <SectionHeader eyebrow="The daily edit" title="Entertainment news" action="All news" />
+          <div className="news-grid">{latestNews.map((item) => <NewsCard key={item.title} item={item} />)}</div>
+        </section>
+
+        <section className="section" id="shows">
+          <div className="split-heading">
+            <SectionHeader eyebrow="Mark your calendar" title="Coming soon" />
+            <p className="section-intro">A first look at the films we cannot wait to see on the big screen.</p>
+          </div>
+          <div className="movie-grid movie-grid--upcoming">{upcomingMovies.map((movie, index) => <MovieCard key={movie.title} movie={movie} index={index} />)}</div>
+        </section>
+
+        <section className="section section--shows">
+          <SectionHeader eyebrow="Binge-worthy" title="Popular shows" action="Explore series" />
+          <div className="show-grid">{popularShows.map((movie, index) => <MovieCard key={movie.title} movie={movie} index={index} compact />)}</div>
+        </section>
+
+        <section className="newsletter" id="newsletter">
+          <div><span className="section-label">The weekly cut</span><h2>Good stories,<br /><em>in your inbox.</em></h2></div>
+          <div className="newsletter__form"><p>A thoughtful round-up of what to watch, read and look forward to.</p><div className="newsletter__input"><span>your@email.com</span><button type="button" aria-label="Subscribe to newsletter"><ArrowIcon /></button></div><small>By subscribing, you agree to our terms. No noise, ever.</small></div>
+        </section>
+        <footer className="site-footer"><Link href="/" className="brand"><span className="brand__mark">F</span><span>FRAME<span className="brand__dot">.</span></span></Link><span>Culture in motion.</span><span>© 2024 Frame Journal</span></footer>
+      </div>
+    </main>
   );
 }
