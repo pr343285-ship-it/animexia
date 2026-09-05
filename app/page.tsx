@@ -28,7 +28,7 @@ function ArrowIcon() {
 }
 
 export default async function Home() {
-  const topAnime = (await getJikanAnime(12, animeFallback)).slice(0, 6);
+  const topAnime = await getJikanAnime(12, animeFallback);
   const [airingAnime, upcomingAnime, animeMovies, frameNews] = await Promise.all([
     fetchJikanAiringAnime(6).then((items) => items.map(animeToMovie)).catch(() => animeFallback),
     fetchJikanUpcomingAnime(6).then((items) => items.map(animeToMovie)).catch(() => animeFallback),
@@ -82,7 +82,7 @@ export default async function Home() {
       {/* Visual Catalog Sections */}
       <div className="site-shell">
         <section className="section" id="trending">
-          <SectionHeader eyebrow="The watchlist" title="Trending anime" action="View all" actionHref="/anime" />
+          <SectionHeader eyebrow="The watchlist" title="Trending anime" action="View All Anime" actionHref="/anime" />
           <div className="movie-grid">
             {topAnime.map((movie, index) => (
               <MovieCard key={movie.title} movie={movie} index={index} />

@@ -227,9 +227,9 @@ export function fallbackToAnime(movie: Movie): Anime {
   };
 }
 
-export async function getJikanAnime(limit: number, fallback: Movie[] = []): Promise<Movie[]> {
+export async function getJikanAnime(limit: number, fallback: Movie[] = [], page = 1): Promise<Movie[]> {
   try {
-    return (await fetchJikanAnime(limit, 1)).map(animeToMovie);
+    return (await fetchJikanAnime(limit, page)).map(animeToMovie);
   } catch {
     return fallback.length ? fallback : animeFallback.slice(0, limit);
   }
