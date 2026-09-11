@@ -1,13 +1,23 @@
 "use client";
 
-import { type FormEvent, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { MovieCard, NewsCard } from "./cards";
 import type { Movie } from "@/lib/mock-data";
 import type { NewsItem } from "@/lib/mock-data";
 
-export function SearchPanel({ initialShows, initialMovies, initialNews }: { initialShows: Movie[]; initialMovies: Movie[]; initialNews: NewsItem[] }) {
-  const [query, setQuery] = useState("");
-  const [submittedQuery, setSubmittedQuery] = useState("");
+export function SearchPanel({
+  initialShows,
+  initialMovies,
+  initialNews,
+  initialQuery = "",
+}: {
+  initialShows: Movie[];
+  initialMovies: Movie[];
+  initialNews: NewsItem[];
+  initialQuery?: string;
+}) {
+  const [query, setQuery] = useState(initialQuery);
+  const [submittedQuery, setSubmittedQuery] = useState(initialQuery);
   const [mode, setMode] = useState<"keyword" | "ai">("keyword");
   const [aiResults, setAiResults] = useState<Movie[]>([]);
   const [aiLoading, setAiLoading] = useState(false);
@@ -16,6 +26,52 @@ export function SearchPanel({ initialShows, initialMovies, initialNews }: { init
   const [remoteShows, setRemoteShows] = useState<Movie[]>(initialShows);
   const [remoteMovies, setRemoteMovies] = useState<Movie[]>(initialMovies);
   const [remoteNews, setRemoteNews] = useState<NewsItem[]>(initialNews);
+
+  async function executeKeywordSearch(nextQuery: string) {
+    if (!nextQuery) return;
+    try {
+      const [showResponse, movieResponse, newsResponse] = await Promise.all([
+        fetch(`/api/shows/search?q=${encodeURIComponent(nextQuery)}`),
+        fetch(`/api/movies/search?q=${encodeURIComponent(nextQuery)}`),
+        fetch(`/api/news/search?q=${encodeURIComponent(nextQuery)}`),
+      ]);
+      const showPayload = (await showResponse.json()) as { results?: Movie[] };
+      const moviePayload = (await movieResponse.json()) as { results?: Movie[] };
+      const newsPayload = (await newsResponse.json()) as { results?: NewsItem[] };
+      if (showResponse.ok && Array.isArray(showPayload.results)) setRemoteShows(showPayload.results);
+      if (movieResponse.ok && Array.isArray(moviePayload.results)) setRemoteMovies(moviePayload.results);
+      if (newsResponse.ok && Array.isArray(newsPayload.results)) setRemoteNews(newsPayload.results);
+    } catch {
+      setRemoteShows(initialShows);
+      setRemoteMovies(initialMovies);
+      setRemoteNews(initialNews);
+    }
+  }
+
+  useEffect(() => {
+    if (!initialQuery.trim()) return;
+    let isMounted = true;
+    const q = encodeURIComponent(initialQuery.trim());
+    Promise.all([
+      fetch(`/api/shows/search?q=${q}`),
+      fetch(`/api/movies/search?q=${q}`),
+      fetch(`/api/news/search?q=${q}`),
+    ])
+      .then(async ([showRes, movieRes, newsRes]) => {
+        if (!isMounted) return;
+        const showPayload = (await showRes.json()) as { results?: Movie[] };
+        const moviePayload = (await movieRes.json()) as { results?: Movie[] };
+        const newsPayload = (await newsRes.json()) as { results?: NewsItem[] };
+        if (showRes.ok && Array.isArray(showPayload.results)) setRemoteShows(showPayload.results);
+        if (movieRes.ok && Array.isArray(moviePayload.results)) setRemoteMovies(moviePayload.results);
+        if (newsRes.ok && Array.isArray(newsPayload.results)) setRemoteNews(newsPayload.results);
+      })
+      .catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
+  }, [initialQuery]);
 
   const keywordResults = useMemo(() => {
     const q = submittedQuery.toLowerCase().trim();
@@ -57,23 +113,7 @@ export function SearchPanel({ initialShows, initialMovies, initialNews }: { init
     const nextQuery = query.trim();
     setSubmittedQuery(nextQuery);
     if (mode === "keyword" && nextQuery) {
-      try {
-        const [showResponse, movieResponse, newsResponse] = await Promise.all([
-          fetch(`/api/shows/search?q=${encodeURIComponent(nextQuery)}`),
-          fetch(`/api/movies/search?q=${encodeURIComponent(nextQuery)}`),
-          fetch(`/api/news/search?q=${encodeURIComponent(nextQuery)}`),
-        ]);
-        const showPayload = (await showResponse.json()) as { results?: Movie[] };
-        const moviePayload = (await movieResponse.json()) as { results?: Movie[] };
-        const newsPayload = (await newsResponse.json()) as { results?: NewsItem[] };
-        if (showResponse.ok && Array.isArray(showPayload.results)) setRemoteShows(showPayload.results);
-        if (movieResponse.ok && Array.isArray(moviePayload.results)) setRemoteMovies(moviePayload.results);
-        if (newsResponse.ok && Array.isArray(newsPayload.results)) setRemoteNews(newsPayload.results);
-      } catch {
-        setRemoteShows(initialShows);
-        setRemoteMovies(initialMovies);
-        setRemoteNews(initialNews);
-      }
+      void executeKeywordSearch(nextQuery);
     }
     if (mode === "ai") void runAiSearch(nextQuery);
     else {

@@ -1,17 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
-export default function LoginPage() {
-  const router = useRouter();
+function LoginFormContent() {
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [googleModalOpen, setGoogleModalOpen] = useState(false);
+  const [demoModalOpen, setDemoModalOpen] = useState(false);
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [name, setName] = useState("");
 
@@ -20,46 +22,58 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
 
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+
     try {
       if (isRegisterMode) {
         // Register new account through existing ANIMEXIA API
         const res = await fetch("/api/auth/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, password }),
+          body: JSON.stringify({
+            name: name.trim() ? name.trim() : undefined,
+            email: cleanEmail,
+            password: cleanPassword,
+          }),
         });
 
+        const data = await res.json().catch(() => ({}));
+
         if (!res.ok) {
-          const data = await res.json();
-          throw new Error(data.error || "Failed to create account.");
+          throw new Error(data.error || "Failed to create account. Please try again.");
         }
 
-        // Auto login after registration
+        // Auto login after successful registration
         const result = await signIn("credentials", {
-          email,
-          password,
+          email: cleanEmail,
+          password: cleanPassword,
           redirect: false,
         });
 
         if (result?.error) {
-          throw new Error("Account created, please sign in.");
+          setError("Account created! Please sign in with your password.");
+          setIsRegisterMode(false);
+          return;
         }
 
-        router.push("/");
-        router.refresh();
+        window.location.href = callbackUrl;
       } else {
         // Sign in with existing credentials
         const result = await signIn("credentials", {
-          email,
-          password,
+          email: cleanEmail,
+          password: cleanPassword,
           redirect: false,
         });
 
         if (result?.error) {
-          setError("Invalid email or password.");
+          if (result.error === "CredentialsSignin") {
+            setError("Invalid email or password. Please check your credentials.");
+          } else {
+            setError(`Authentication failed: ${result.error}`);
+          }
         } else {
-          router.push("/");
-          router.refresh();
+          window.location.href = callbackUrl;
         }
       }
     } catch (err: unknown) {
@@ -72,14 +86,13 @@ export default function LoginPage() {
   const handleDemoLogin = async () => {
     setLoading(true);
     setError(null);
-    setGoogleModalOpen(false);
+    setDemoModalOpen(false);
 
-    // Simulated 1-click fast login for instant demo experience
     try {
-      // First try to register or sign in demo user
       const demoEmail = "demo@animexia.internal";
       const demoPass = "AnimexiaDemo2024!";
-      
+
+      // Check if demo user already exists by trying login
       const res = await signIn("credentials", {
         email: demoEmail,
         password: demoPass,
@@ -87,25 +100,27 @@ export default function LoginPage() {
       });
 
       if (res?.error) {
-        // Create demo user if not yet in sqlite db
+        // Create demo user in sqlite database if not present
         await fetch("/api/auth/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: "Google User", email: demoEmail, password: demoPass }),
+          body: JSON.stringify({ name: "Demo User", email: demoEmail, password: demoPass }),
         });
 
-        await signIn("credentials", {
+        const secondAttempt = await signIn("credentials", {
           email: demoEmail,
           password: demoPass,
           redirect: false,
         });
+
+        if (secondAttempt?.error) {
+          throw new Error("Unable to log in with demo account.");
+        }
       }
 
-      router.push("/");
-      router.refresh();
-    } catch {
-      // Fallback
-      router.push("/");
+      window.location.href = callbackUrl;
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Demo sign in failed.");
     } finally {
       setLoading(false);
     }
@@ -130,41 +145,35 @@ export default function LoginPage() {
             <span className="brand__name">ANIMEXIA<span className="brand__dot">.</span></span>
           </Link>
           <h1>{isRegisterMode ? "Create Account" : "Welcome Back"}</h1>
-          <p>{isRegisterMode ? "Join ANIMEXIA for curated anime tracking" : "Sign in to access your cinematic anime queue"}</p>
+          <p>{isRegisterMode ? "Register to curate your custom anime queue" : "Sign in to access your cinematic anime watchlist"}</p>
         </div>
 
-        {/* Continue with Google */}
+        {/* 1-Click Instant Demo Login */}
         <button
           type="button"
           className="google-btn"
-          onClick={() => setGoogleModalOpen(true)}
+          onClick={() => setDemoModalOpen(true)}
         >
-          <svg className="google-icon" viewBox="0 0 24 24">
-            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-          </svg>
-          Continue with Google
+          <span className="demo-badge-icon">⚡</span>
+          <span>Instant Demo Sign In (1-Click Test)</span>
         </button>
 
         <div className="login-divider">
-          <span>or continue with email</span>
+          <span>{isRegisterMode ? "or register with credentials" : "or sign in with email"}</span>
         </div>
 
         {/* Credentials Form */}
         <form onSubmit={handleSubmit} className="login-form">
           {isRegisterMode && (
             <div className="form-group">
-              <label htmlFor="name">Your Name</label>
+              <label htmlFor="name">Your Name (Optional)</label>
               <input
                 id="name"
                 type="text"
                 className="form-input"
-                placeholder="Rengoku"
+                placeholder="Rengoku Kyojuro"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                required
               />
             </div>
           )}
@@ -183,7 +192,7 @@ export default function LoginPage() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">Password (min 8 characters)</label>
             <input
               id="password"
               type="password"
@@ -196,7 +205,7 @@ export default function LoginPage() {
             />
           </div>
 
-          {error && <div className="login-error">{error}</div>}
+          {error && <div className="login-error" role="alert">{error}</div>}
 
           <button type="submit" className="login-submit-btn" disabled={loading}>
             {loading ? "Please wait..." : isRegisterMode ? "Create Account" : "Sign In"}
@@ -214,28 +223,23 @@ export default function LoginPage() {
           >
             {isRegisterMode
               ? "Already have an account? Sign In"
-              : "Don't have an account? Join ANIMEXIA"}
+              : "Don't have an account? Register new account"}
           </button>
         </div>
       </div>
 
-      {/* Simulated Google Auth Modal from Downloads project */}
-      {googleModalOpen && (
-        <div className="modal-overlay" onClick={() => setGoogleModalOpen(false)}>
+      {/* Transparent Demo Access Modal */}
+      {demoModalOpen && (
+        <div className="modal-overlay" onClick={() => setDemoModalOpen(false)}>
           <div className="google-auth-box" onClick={(e) => e.stopPropagation()}>
-            <svg className="google-icon" style={{ width: 28, height: 28, margin: "0 auto 8px" }} viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-            </svg>
-            <h3>Choose an account</h3>
-            <p className="subtext">to continue to ANIMEXIA</p>
+            <span style={{ fontSize: 32, display: "block", marginBottom: 8 }}>⚡</span>
+            <h3>Instant Demo Account</h3>
+            <p className="subtext">Pre-configured test profile for quick ANIMEXIA exploration</p>
 
             <div className="account-item" onClick={handleDemoLogin}>
-              <div className="account-avatar">G</div>
+              <div className="account-avatar">D</div>
               <div className="account-info">
-                <div className="account-name">Google Demo User</div>
+                <div className="account-name">ANIMEXIA Demo Tester</div>
                 <div className="account-email">demo@animexia.internal</div>
               </div>
             </div>
@@ -243,7 +247,7 @@ export default function LoginPage() {
             <button
               type="button"
               className="google-modal-cancel"
-              onClick={() => setGoogleModalOpen(false)}
+              onClick={() => setDemoModalOpen(false)}
             >
               Cancel
             </button>
@@ -253,3 +257,12 @@ export default function LoginPage() {
     </div>
   );
 }
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="login-page-container"><div className="login-card"><p className="text-center text-muted">Loading...</p></div></div>}>
+      <LoginFormContent />
+    </Suspense>
+  );
+}
+

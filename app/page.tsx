@@ -1,6 +1,8 @@
 import { MovieCard, NewsCard, SectionHeader } from "@/components/cards";
 import { Navbar } from "@/components/navbar";
 import { HeroCanvasAnimation } from "@/components/hero-canvas-animation";
+import { HeroParallax } from "@/components/hero-parallax";
+import { ScrollReveal } from "@/components/scroll-reveal";
 import Link from "next/link";
 import {
   featuredMovie,
@@ -39,49 +41,52 @@ export default async function Home() {
 
   return (
     <main className="cinematic-root">
+      <ScrollReveal />
       {/* Floating Glass Navigation */}
       <Navbar active="Home" />
 
-      {/* 3D Cinematic Hero with 300-Frame Scroll Canvas */}
-      <section className="hero relative overflow-hidden" id="hero">
-        <HeroCanvasAnimation />
+      {/* 3D Cinematic Hero with 300-Frame Scroll Canvas & Pointer Depth */}
+      <HeroParallax>
+        <section className="hero relative overflow-hidden" id="hero">
+          <HeroCanvasAnimation />
 
-        <div className="site-shell relative z-10 hero-shell">
-          <div className="hero__content" id="discover">
-            <div className="hero__eyebrow">
-              <span className="eyebrow-line" />
-              <span>Cinematic Premiere</span>
-              <span className="eyebrow-pill">300-Frame Interactive</span>
-              <span className="eyebrow-year">{featured.releaseDate}</span>
+          <div className="site-shell relative z-10 hero-shell hero-parallax-layer-content">
+            <div className="hero__content" id="discover">
+              <div className="hero__eyebrow">
+                <span className="eyebrow-line" />
+                <span>Cinematic Premiere</span>
+                <span className="eyebrow-pill">300-Frame Interactive</span>
+                <span className="eyebrow-year">{featured.releaseDate}</span>
+              </div>
+              <h1 className="hero-title">
+                {featured.title}
+                <br />
+                <em className="hero-title-accent">Flame of Mugen.</em>
+              </h1>
+              <p className="hero__description">
+                {featured.genre} · {featured.rating ?? "New"}. Anime premieres, seasonal picks, and stories forging the next wave of cinematic animation.
+              </p>
+              <div className="flex flex-wrap items-center gap-4">
+                <a className="button button--light button--cinematic" href="#trending">
+                  <PlayIcon /> Explore the picks
+                </a>
+                <a className="button button--ghost button--cinematic" href="#news">
+                  Read the latest <ArrowIcon />
+                </a>
+              </div>
             </div>
-            <h1 className="hero-title">
-              {featured.title}
-              <br />
-              <em className="hero-title-accent">Flame of Mugen.</em>
-            </h1>
-            <p className="hero__description">
-              {featured.genre} · {featured.rating ?? "New"}. Anime premieres, seasonal picks, and stories forging the next wave of cinematic animation.
-            </p>
-            <div className="flex flex-wrap items-center gap-4">
-              <a className="button button--light button--cinematic" href="#trending">
-                <PlayIcon /> Explore the picks
-              </a>
-              <a className="button button--ghost button--cinematic" href="#news">
-                Read the latest <ArrowIcon />
-              </a>
+            <div className="hero__meta">
+              <span>01 / 04</span>
+              <span className="hero__progress"><i /></span>
+              <span>Scroll To Scrub Flame Animation</span>
             </div>
           </div>
-          <div className="hero__meta">
-            <span>01 / 04</span>
-            <span className="hero__progress"><i /></span>
-            <span>Scroll To Scrub Flame Animation</span>
-          </div>
-        </div>
-      </section>
+        </section>
+      </HeroParallax>
 
       {/* Visual Catalog Sections */}
       <div className="site-shell">
-        <section className="section" id="trending">
+        <section className="section reveal-on-scroll" id="trending">
           <SectionHeader eyebrow="The watchlist" title="Trending anime" action="View All Anime" actionHref="/anime" />
           <div className="movie-grid">
             {topAnime.map((movie, index) => (
@@ -90,7 +95,7 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="section section--news" id="news">
+        <section className="section section--news reveal-on-scroll" id="news">
           <SectionHeader eyebrow="The daily edit" title="Anime news" action="All news" actionHref="/news" />
           <div className="news-grid">
             {frameNews.map((item) => (
@@ -99,7 +104,7 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="section" id="shows">
+        <section className="section reveal-on-scroll" id="shows">
           <div className="split-heading">
             <SectionHeader eyebrow="Mark your calendar" title="Upcoming anime" action="View upcoming" actionHref="/anime" />
             <p className="section-intro">
@@ -113,7 +118,7 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="section section--shows">
+        <section className="section section--shows reveal-on-scroll">
           <SectionHeader eyebrow="Binge-worthy" title="Currently airing" action="Explore anime" actionHref="/anime" />
           <div className="show-grid">
             {airingAnime.map((movie, index) => (
@@ -122,7 +127,7 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="section">
+        <section className="section reveal-on-scroll">
           <SectionHeader eyebrow="Feature-length stories" title="Anime movies" action="Explore movies" actionHref="/movies" />
           <div className="movie-grid">
             {animeMovies.map((movie, index) => (

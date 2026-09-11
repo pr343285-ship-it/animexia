@@ -5,10 +5,26 @@ import { MovieCard, NewsCard } from "./cards";
 import { Recommendations } from "./recommendations";
 import { movies, news, shows } from "@/lib/content";
 
+function youtubeEmbedUrl(value?: string) {
+  if (!value) return undefined;
+  try {
+    const url = new URL(value);
+    const id = url.hostname === "youtu.be"
+      ? url.pathname.slice(1)
+      : url.pathname.includes("/embed/")
+        ? url.pathname.split("/embed/")[1]
+        : url.searchParams.get("v");
+    return id ? `https://www.youtube-nocookie.com/embed/${id.split(/[?&]/)[0]}` : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export function Detail({ item, kind }: { item: Movie | NewsItem; kind: "movie" | "show" | "news" }) {
   const movie = "cast" in item;
   const related = movie ? (kind === "show" ? shows : movies).filter((x) => x.slug !== item.slug).slice(0, 3) : news.filter((x) => x.slug !== item.slug).slice(0, 3);
   const meta = movie ? `${item.releaseDate}${item.rating ? ` · ★ ${item.rating}` : ""}` : item.published;
+  const trailerEmbed = movie && item.trailer ? youtubeEmbedUrl(item.trailer) : undefined;
 
   return (
     <article className="detail-page section">
@@ -18,7 +34,22 @@ export function Detail({ item, kind }: { item: Movie | NewsItem; kind: "movie" |
 
       <div className="detail-hero" style={{ backgroundImage: `linear-gradient(90deg, rgba(8,10,15,.95), rgba(8,10,15,.35)), url("${item.image}")` }}>
         <div>
-          <span className="section-label">{movie ? item.genre : item.category}</span>
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            {movie ? (
+              item.genre.split(" · ").map((g) => (
+                <Link
+                  key={g}
+                  href={`/anime?genre=${encodeURIComponent(g.trim().toLowerCase())}`}
+                  className="glass-genre-pill"
+                >
+                  <span>#</span>
+                  {g.trim()}
+                </Link>
+              ))
+            ) : (
+              <span className="section-label">{item.category}</span>
+            )}
+          </div>
           <h1>{item.title}</h1>
           <p className="detail-meta">{meta}</p>
         </div>
@@ -54,10 +85,27 @@ export function Detail({ item, kind }: { item: Movie | NewsItem; kind: "movie" |
             <span>▦</span>
             <p>{item.seasons ? `${item.seasons} seasons` : ""}{item.seasons && item.episodes ? " · " : ""}{item.episodes ? `${item.episodes} episodes` : ""}</p>
           </div>
-        ) : (
+        ) : movie && trailerEmbed ? (
           <div className="trailer">
-          <span>▶</span>
-          <p>Trailer placeholder</p>
+            <iframe
+              title={`${item.title} official trailer`}
+              src={trailerEmbed}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+            <p className="mt-3 text-center">
+              <a className="text-link" href={item.trailer} target="_blank" rel="noreferrer">
+                Open official trailer ↗
+              </a>
+            </p>
+          </div>
+        ) : (
+          <div className="trailer trailer--unavailable">
+            <div className="trailer-fallback-content">
+              <span className="trailer-icon">🎬</span>
+              <p className="trailer-title">Official trailer unavailable</p>
+              <p className="trailer-subtitle">Explore synopsis and cast in the ANIMEXIA catalog</p>
+            </div>
           </div>
         )}
       </div>

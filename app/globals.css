@@ -562,3 +562,191 @@ h1,h2 { font-family:var(--font-display), Georgia, serif; font-weight:400; letter
   padding: 6px 12px;
   font-weight: 500;
 }
+
+/* ==========================================================================
+   Hero Parallax, Scroll Reveal, Glass Genres & Trailers
+   ========================================================================== */
+
+/* Hero Parallax */
+.hero-parallax-container {
+  --mouse-px: 0;
+  --mouse-py: 0;
+  position: relative;
+  width: 100%;
+}
+.hero-parallax-layer-back {
+  transform: translate3d(calc(var(--mouse-px) * -16px), calc(var(--mouse-py) * -12px), 0);
+  transition: transform 0.12s ease-out;
+  will-change: transform;
+}
+.hero-parallax-layer-content {
+  transform: translate3d(calc(var(--mouse-px) * 10px), calc(var(--mouse-py) * 8px), 0);
+  transition: transform 0.12s ease-out;
+  will-change: transform;
+}
+
+/* Scroll-triggered Entrance Animations */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.reveal-on-scroll.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Clickable Glass Genre Pills */
+.glass-genre-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 13px;
+  border-radius: 9999px;
+  letter-spacing: 0.02em;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+}
+.glass-genre-pill span {
+  color: #38bdf8;
+  font-size: 11px;
+}
+.glass-genre-pill:hover {
+  color: #ffffff;
+  background: rgba(56, 189, 248, 0.15);
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.3);
+  transform: translateY(-2px) scale(1.03);
+}
+
+/* Floating Glass Genre Filter Bar on /anime */
+.genre-filter-container {
+  margin: 18px 0 32px;
+  padding: 4px 0;
+}
+.genre-filter-pill {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  padding: 8px 18px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #94a3b8;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+}
+.genre-filter-pill:hover {
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+.genre-filter-pill--active {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.14);
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  font-weight: 600;
+}
+
+/* Trailers */
+.trailer {
+  position: relative;
+  overflow: hidden;
+  background: rgba(13, 17, 23, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
+  padding: 16px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.trailer:hover {
+  border-color: rgba(56, 189, 248, 0.35);
+  box-shadow: 0 20px 42px rgba(0, 0, 0, 0.6), 0 0 24px rgba(56, 189, 248, 0.12);
+}
+.trailer iframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 8px;
+  border: 0;
+}
+.trailer--unavailable {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  text-align: center;
+  background: radial-gradient(circle at center, rgba(30, 41, 59, 0.4) 0%, rgba(10, 12, 18, 0.85) 100%);
+}
+.trailer-fallback-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px;
+}
+.trailer-icon {
+  font-size: 34px;
+  opacity: 0.75;
+}
+.trailer-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin: 0;
+}
+.trailer-subtitle {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* Catalog Pagination */
+.catalog-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 48px;
+  margin-bottom: 32px;
+}
+.catalog-pagination span[aria-current="page"] {
+  font-size: 13px;
+  font-weight: 600;
+  color: #38bdf8;
+  padding: 8px 20px;
+  background: rgba(56, 189, 248, 0.09);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  border-radius: 9999px;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.16);
+}
+
+/* Reduced Motion overrides */
+@media (prefers-reduced-motion: reduce) {
+  .hero-parallax-layer-back,
+  .hero-parallax-layer-content {
+    transform: none !important;
+    transition: none !important;
+  }
+  .reveal-on-scroll {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+

@@ -43,7 +43,18 @@ export function AnimeDetail({ item, related }: { item: Anime; related: Anime[] }
           <span className="section-label">The story</span>
           <h2>Synopsis</h2>
           <p>{item.synopsis}</p>
-          <div className="flex flex-wrap gap-2">{item.genres.map((genre) => <span className="search-mode" key={genre}>{genre}</span>)}</div>
+          <div className="flex flex-wrap gap-2 mt-3">
+            {item.genres.map((genre) => (
+              <Link
+                key={genre}
+                href={`/anime?genre=${encodeURIComponent(genre.toLowerCase())}`}
+                className="glass-genre-pill"
+              >
+                <span>#</span>
+                {genre}
+              </Link>
+            ))}
+          </div>
         </div>
         <div>
           <span className="section-label">Production</span>
@@ -51,7 +62,29 @@ export function AnimeDetail({ item, related }: { item: Anime; related: Anime[] }
           <p>{item.episodes ? `${item.episodes} episodes` : "Episode count unavailable"} · Aired {date(item.airedFrom)}{item.airedTo ? ` – ${date(item.airedTo)}` : ""}</p>
           <p className="detail-credits">{item.studios.length ? `Studio: ${item.studios.join(" · ")}` : "Studio information unavailable"}{item.source ? ` · Source: ${item.source}` : ""}</p>
         </div>
-        {item.trailerUrl && trailerEmbedUrl ? <div className="trailer"><iframe title={`${item.title} official trailer`} src={trailerEmbedUrl} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen /><p><a className="text-link" href={item.trailerUrl} target="_blank" rel="noreferrer">Open official trailer ↗</a></p></div> : <div className="trailer"><span>▶</span><p>Official trailer unavailable</p></div>}
+        {item.trailerUrl && trailerEmbedUrl ? (
+          <div className="trailer">
+            <iframe
+              title={`${item.title} official trailer`}
+              src={trailerEmbedUrl}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+            <p className="mt-3 text-center">
+              <a className="text-link" href={item.trailerUrl} target="_blank" rel="noreferrer">
+                Open official trailer ↗
+              </a>
+            </p>
+          </div>
+        ) : (
+          <div className="trailer trailer--unavailable">
+            <div className="trailer-fallback-content">
+              <span className="trailer-icon">🎬</span>
+              <p className="trailer-title">Official trailer unavailable</p>
+              <p className="trailer-subtitle">Explore episodes and details in the ANIMEXIA catalog</p>
+            </div>
+          </div>
+        )}
       </div>
       {item.characters.length > 0 && <section className="section"><span className="section-label">Cast</span><h2>Characters</h2><p>{item.characters.map((character) => `${character.name}${character.role ? ` (${character.role})` : ""}`).join(" · ")}</p></section>}
       <AISummary title={item.title} genre={item.genres.join(" · ")} synopsis={item.synopsis} releaseDate={date(item.airedFrom)} rating={item.score?.toFixed(1)} cast={item.characters.map((character) => character.name)} />

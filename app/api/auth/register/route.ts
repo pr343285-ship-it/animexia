@@ -5,8 +5,14 @@ import { hash } from "bcryptjs";
 import { prisma } from "@/lib/db";
 
 const registerSchema = z.object({
-  name: z.string().trim().min(2).max(80).optional(),
-  email: z.string().email(),
+  name: z
+    .string()
+    .trim()
+    .max(80)
+    .optional()
+    .nullable()
+    .transform((val) => (val && val.length > 0 ? val : undefined)),
+  email: z.string().trim().email(),
   password: z.string().min(8).max(128),
 });
 

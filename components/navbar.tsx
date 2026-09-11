@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { getSession, signOut } from "next-auth/react";
 
 interface NavbarProps {
   active?: string;
@@ -9,6 +10,17 @@ interface NavbarProps {
 
 export function Navbar({ active = "" }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState<{ name?: string | null; email?: string | null } | null>(null);
+
+  useEffect(() => {
+    getSession()
+      .then((session) => {
+        if (session?.user) {
+          setUser(session.user);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const links = [
     { label: "Home", href: "/" },
@@ -45,7 +57,7 @@ export function Navbar({ active = "" }: NavbarProps) {
           })}
         </nav>
 
-        {/* Actions (Search, Sign In / Join, Mobile Toggle) */}
+        {/* Actions (Search, Sign In / User Pill, Mobile Toggle) */}
         <div className="flex items-center gap-2 sm:gap-3">
           <Link href="/search" className="glass-icon-btn" aria-label="Search anime">
             <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-2">
@@ -54,10 +66,29 @@ export function Navbar({ active = "" }: NavbarProps) {
             </svg>
           </Link>
 
-          {/* Glassmorphic Sign In link */}
-          <Link href="/login" className="glass-signin-btn">
-            <span className="glass-signin-btn__text">Sign In</span>
-          </Link>
+          {/* Dynamic User Pill or Glassmorphic Sign In link */}
+          {user ? (
+            <div className="glass-user-pill">
+              <span className="glass-user-avatar">
+                {(user.name?.[0] || user.email?.[0] || "U").toUpperCase()}
+              </span>
+              <span className="glass-user-name hidden sm:inline">
+                {user.name || user.email?.split("@")[0]}
+              </span>
+              <button
+                type="button"
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="glass-logout-btn"
+                title="Sign Out"
+              >
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            <Link href="/login" className="glass-signin-btn">
+              <span className="glass-signin-btn__text">Sign In</span>
+            </Link>
+          )}
 
           {/* Mobile menu trigger */}
           <button
@@ -91,13 +122,29 @@ export function Navbar({ active = "" }: NavbarProps) {
               {link.label}
             </Link>
           ))}
-          <Link
-            href="/login"
-            className="glass-mobile-link glass-mobile-link--accent"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Sign In / Join
-          </Link>
+          {user ? (
+            <div className="glass-mobile-user-box">
+              <span className="glass-mobile-user-text">Signed in as <strong>{user.name || user.email}</strong></span>
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  signOut({ callbackUrl: "/" });
+                }}
+                className="glass-mobile-link glass-mobile-link--accent w-full text-left"
+              >
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="glass-mobile-link glass-mobile-link--accent"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Sign In / Join
+            </Link>
+          )}
         </nav>
       )}
     </header>
